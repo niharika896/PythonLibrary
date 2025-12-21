@@ -1,5 +1,5 @@
 """
-USER STRATEGIES ONLY
+USER STRATEGIES ONLY (PERSISTENT STRATEGY MODEL)
 
 You define:
 - Bot strategies (classes)
@@ -19,7 +19,14 @@ from .controllers.BotBase import BotController
 
 
 # ============================================================
-# BOT STRATEGIES
+# PERSISTENT STRATEGY REGISTRY
+# ============================================================
+
+BOT_STRATEGIES = {}   # bot_id -> strategy instance
+
+
+# ============================================================
+# BOT STRATEGIES (ONE CLASS = ONE TEMPLATE)
 # ============================================================
 
 class Forager(BotController):
@@ -78,10 +85,11 @@ class Saboteur(BotController):
 class HeatSeeker(BotController):
     def __init__(self, ctx):
         super().__init__(ctx)
-        self.target = None
+        self.target = None   # persistent memory
 
     def act(self):
         ctx = self.ctx
+
         if self.target is None:
             enemies = ctx.senseEnemyNearby()
             if enemies:
@@ -118,6 +126,22 @@ class CustomBot(BotController):
 
 
 # ============================================================
+# TEMPLATE → STRATEGY MAP (AUTHORITATIVE)
+# ============================================================
+
+TEMPLATE_TO_STRATEGY = {
+    "Forager": Forager,
+    "FlashScout": FlashScout,
+    "Hoarder": Hoarder,
+    "Mule": Mule,
+    "Lurker": Lurker,
+    "Saboteur": Saboteur,
+    "HeatSeeker": HeatSeeker,
+    "CustomBot": CustomBot,
+}
+
+
+# ============================================================
 # COST CHECK (OPTIONAL USER UTILITY)
 # ============================================================
 
@@ -127,12 +151,13 @@ def can_afford(api: GameAPI, abilities: list[str]) -> bool:
 
 
 # ============================================================
-# SPAWN DECISIONS
+# MAIN ENTRY POINT
 # ============================================================
 
 def play(api: GameAPI):
     actions = []
 
+    # ---------------- SPAWN PHASE ----------------
     if api.view.bot_count < api.view.max_bots:
         abilities = [
             Ability.HARVEST.value,
@@ -141,5 +166,20 @@ def play(api: GameAPI):
 
         if can_afford(api, abilities):
             actions.append(spawn("Forager", abilities))
+
+    # ---------------- EXECUTION PHASE ----------------
+    for bot in api.get_my_bots():
+        ctx = BotContext(api, bot)
+
+        if bot.id not in BOT_STRATEGIES:
+            strategy_cls = TEMPLATE_TO_STRATEGY.get(
+                bot.template,
+                CustomBot
+            )
+            BOT_STRATEGIES[bot.id] = strategy_cls(ctx)
+
+        action = BOT_STRATEGIES[bot.id].act()
+        if action:
+            actions.append(action)
 
     return actions

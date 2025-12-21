@@ -41,3 +41,12 @@ ABILITY_COSTS = {
     # "LOCKPICK":  {"scrap": 10, "energy": 1.5},
     # "POWERBANK": {"scrap": 15, "energy": -1},
 }
+
+class BotType(str, Enum):
+    FORAGER = "Forager"
+    HOARDER = "Hoarder"
+    MULE = "Mule"
+    LURKER = "Lurker"
+    SABOTEUR = "Saboteur"
+    HEATSEEKER = "HeatSeeker"
+    CUSTOMBOT = "CustomBot"

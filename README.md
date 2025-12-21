@@ -40,3 +40,39 @@ class Forager(BotController):
         ...
 ```
 Define your complete bot strategy here and execute!
+
+## Some Examples:
+
+### Adding extra abilities while spawning bots and using botcontext
+```python
+    def play(api: GameAPI):
+    actions = []
+
+    if api.view.bot_count < api.view.max_bots:
+        abilities = [
+            Ability.HARVEST.value,
+            Ability.SCOUT.value,
+            Ability.SPEED.value,          # EXTRA ability
+            Ability.SELF_DESTRUCT.value,  # EXTRA ability
+        ]
+
+        if can_afford(api, abilities):
+            actions.append(
+                spawn("HeatSeeker", abilities)
+            )
+
+    return actions
+```
+### OR like this:
+```python
+actions.append(
+    spawn(
+        "CustomBot",
+        [
+            Ability.HARVEST.value,
+            Ability.SCOUT.value,
+            Ability.SPEED.value,
+        ]
+    )
+)
+```

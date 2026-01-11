@@ -1,9 +1,8 @@
-from .EnemyBot import EnemyBot
-from .VisibleAlgae import VisibleAlgae
+from .Bot import Bot
+from .Point import Point
 from .VisibleScrap import VisibleScrap
 from typing import List
 
 class VisibleEntities:
-    enemies: List[EnemyBot]
-    algae: List[VisibleAlgae]
+    enemies: List[Bot]
     scraps: List[VisibleScrap]

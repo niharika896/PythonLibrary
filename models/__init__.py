@@ -3,7 +3,7 @@ import Bot
 import EnemyBot
 import PlayerView
 import Point
-import VisibleAlgae
+import PythonLib.models.Algae as Algae
 import VisibleScrap
 import VisibleEntities
 import PermanentEntities
@@ -14,7 +14,7 @@ __all__ = [
     "EnemyBot",
     "PlayerView",
     "Point",
-    "VisibleAlgae",
+    "Algae",
     "VisibleScrap",
     "VisibleEntities",
     "PermanentEntities",

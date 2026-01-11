@@ -3,5 +3,5 @@ from .Point import Point
 class EnergyPad:
     id: int
     location: Point
-    availlable: int
+    available: int
     ticksleft: int

@@ -17,7 +17,7 @@ def decode_player_view(raw_json: str) -> PlayerView:
 	]
 
     algae = [
-        VisibleAlgae(**a)
+        Algae(**a)
         for a in data["visible_entities"].get("algae", [])
 	]
 

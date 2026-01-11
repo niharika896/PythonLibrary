@@ -30,3 +30,9 @@ class GameAPI:
 
     def energypads(self):
         return self.view.permanent_entities.energypads
+    
+    def visible_walls(self):
+        return self.view.visible_entities.walls
+    
+    def visible_algea(self):
+        return self.view.permanent_entities.algae

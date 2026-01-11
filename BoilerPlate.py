@@ -12,7 +12,7 @@ RULES:
 from .API import GameAPI
 from .BotContext import BotContext
 from .Constants import Ability, Direction
-from .Helper import *
+from .Translate import *
 from .controllers.BotBase import BotController
 
 BOT_STRATEGIES = {}

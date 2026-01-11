@@ -1,6 +1,7 @@
 from .Constants import Direction, Ability, ABILITY_COSTS
-from .Helper import *
+from .Translate import *
 from .models import Point
+from .Helper import *
 
 
 class BotContext:
@@ -44,12 +45,19 @@ class BotContext:
     # ---------------- Sensing ----------------
     def senseEnemyNearby(self):
         return self.api.visible_enemies()
+    
+    def senseEnemyinRadius(self, bot:Point, radius: int = 1):
+        return [b for b in self.api.visible_enemies() if manhattan_distance(b.location,bot)<=radius]
 
     def senseBotNearby(self):
         return [b for b in self.api.get_my_bots() if b.id != self.bot.id]
-
-    def senseAlgae(self):
-        return self.api.visible_algae()
+    
+    def senseBotinRadius(self, bot:Point, radius: int = 1):
+        return [b for b in self.api.get_my_bots() if b.id != self.bot.id and manhattan_distance(b.location,bot)<=radius]
+    
+    def senseAlgae(self, radius: int = 1):
+        pos=self.bot.location
+        return [a for a in self.api.visible_algae() if manhattan_distance(a.location,pos)<=radius]
 
     def senseObjects(self):
         return {
@@ -59,7 +67,10 @@ class BotContext:
         }
 
     def senseWalls(self):
-        pass
+        return self.api.visible_walls()
+    
+    def senseWallsinRadius(self, bot:Point, radius: int = 1):
+        return [w for w in self.api.visible_walls() if manhattan_distance(w,bot)<=radius]
 
     # ---------------- Pathing ----------------
     def canMove(self, direction: Direction):
@@ -78,19 +89,47 @@ class BotContext:
 
     def move(self, direction: Direction):
         return move(self.bot.id, direction)
+    
 
     def shortestPath(self, target: Point) -> int:
         bx, by = self.bot.location.x, self.bot.location.y
         tx, ty = target.x, target.y
         return abs(bx - tx) + abs(by - ty)
+    
+    # ---------------Collision Avoidance----------------
+    
+    def checkBlocked(self,pos: Point):
+        return (
+            self.senseWallsinRadius(pos) or
+            self.senseEnemyinRadius(pos) or
+            self.senseBotinRadius(pos)
+        )
+        
+    def moveTarget(self, bot: Point, target: Point):
+        dx = target.x - bot.x
+        dy = target.y - bot.y
 
+        if abs(dx) >= abs(dy):
+            primary = Direction.EAST if dx > 0 else Direction.WEST
+        else:
+            primary = Direction.NORTH if dy > 0 else Direction.SOUTH
+        
+        # ---------- try intended direction ----------
+        next_pos = next_point(bot, primary)
+        if not self.checkBlocked(next_pos):
+            return primary
+
+        # ---------- fallback: any safe direction ----------
+        for d in (Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST):
+            np = next_point(bot, d)
+            if not self.checkBlocked(np):
+                return d
+
+        # ---------- no safe move ----------
+        return None
+    
+    
     # ---------------- Combat ----------------
-    def canAttack(self, location: Point): #How to Define this? #does it have energy?
-        pass
-
-    def attack(self, location: Point):
-        return attack(self.bot.id, location.x, location.y)
-
     def canDefend(self):
         return Ability.SHIELD.value in self.bot.abilities 
 
@@ -110,24 +149,6 @@ class BotContext:
 
     def spawn(self, template: str, abilities: list[str]):
         return spawn(template, abilities)
-    # def canAffordUpgrade(self, ability: str) -> bool:
-    #     if ability in self.bot.abilities:
-    #         return False
-
-    #     cost = self.cost([ability])
-
-    #     return (
-    #         self.api.get_scraps() >= cost["scrap"]
-    #         and self.bot.energy >= cost["energy"]
-    #     )
-
-
-
-    # def upgrade(self, ability: Ability):
-    #     return upgrade(self.bot.id, ability)
-
-    # def giveNew(self, ability: Ability):
-    #     return upgrade(self.bot.id, ability)
 
     # ---------------- Resource Gathering ----------------
     def isAlgae(self, location: Point):
@@ -153,3 +174,7 @@ class BotContext:
                 return algae.is_poison
 
         return False
+    
+    # -----------------Extra Utilities -----------------
+    
+        

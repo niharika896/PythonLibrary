@@ -3,7 +3,7 @@ from enum import Enum
 class Ability(str, Enum):
     HARVEST = "HARVEST"
     SCOUT = "SCOUT"
-    POISON = "POISON"
+    # POISON = "POISON"
     SELF_DESTRUCT = "SELF_DESTRUCT"
     SPEED = "SPEED"
     SHIELD = "SHIELD"
@@ -50,3 +50,7 @@ class BotType(str, Enum):
     SABOTEUR = "Saboteur"
     HEATSEEKER = "HeatSeeker"
     CUSTOMBOT = "CustomBot"
+    
+class AlgaeType(str, Enum):
+    UNKNOWN = "UNKNOWN"
+    TRUE = "TRUE"

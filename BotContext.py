@@ -58,6 +58,11 @@ class BotContext:
     def senseAlgae(self, radius: int = 1):
         pos=self.bot.location
         return [a for a in self.api.visible_algae() if manhattan_distance(a.location,pos)<=radius]
+    
+    def senseSacraps(self,radius: int = 1):
+        pos=self.bot.location
+        return [a for a in self.api.visible_scraps() if manhattan_distance(a.location,pos)<=radius]
+        
 
     def senseObjects(self):
         return {
@@ -166,7 +171,7 @@ class BotContext:
     def canDefend(self):
         return Ability.SHIELD.value in self.bot.abilities 
 
-    def defend(self):
+    def defendSelf(self):
         return defend(self.bot.id)
 
     def selfDestruct(self):
@@ -184,29 +189,10 @@ class BotContext:
         return spawn(template, abilities)
 
     # ---------------- Resource Gathering ----------------
-    def isAlgae(self, location: Point):
-        return any(a.location == location for a in self.api.visible_algae())
 
     def harvestAlgae(self, direction: Direction):
         return harvest(self.bot.id, direction)
 
-    def checkPoisonous(self, direction: Direction):
-        bx, by = self.bot.location.x, self.bot.location.y
-
-        if direction == Direction.NORTH:
-            target = Point(bx, by + 1)
-        elif direction == Direction.SOUTH:
-            target = Point(bx, by - 1)
-        elif direction == Direction.EAST:
-            target = Point(bx + 1, by)
-        else:
-            target = Point(bx - 1, by)
-
-        for algae in self.api.visible_algae():
-            if algae.location == target:
-                return algae.is_poison
-
-        return False
     
     # -----------------Extra Utilities -----------------
     

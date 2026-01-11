@@ -22,7 +22,7 @@ class GameAPI:
     def visible_algae(self):
         return self.view.visible_entities.algae
         
-    def sense_bot_scraps(self):
+    def visible_scraps(self):
         return self.view.visible_entities.scraps
 
     def banks(self):
@@ -34,5 +34,5 @@ class GameAPI:
     def visible_walls(self):
         return self.view.visible_entities.walls
     
-    def visible_algea(self):
+    def visible_algae(self):
         return self.view.permanent_entities.algae

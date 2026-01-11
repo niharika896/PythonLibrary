@@ -16,6 +16,7 @@ from .BotContext import BotContext
 from .Constants import Ability, Direction
 from .Translate import *
 from .controllers.BotBase import BotController
+from .templates import Forager, FlashScout, HeatSeeker, Lurker, Saboteur
 
 
 # ============================================================
@@ -24,115 +25,10 @@ from .controllers.BotBase import BotController
 
 BOT_STRATEGIES = {}   # bot_id -> strategy instance
 
-
-# ============================================================
-# BOT STRATEGIES (ONE CLASS = ONE TEMPLATE)
-# ============================================================
-
-class Forager(BotController):
-    def act(self):
-        ctx = self.ctx
-        visible = ctx.senseAlgae()
-        if visible:
-            return harvest(ctx.getID(), visible[0]);
-        i=2;
-        while(i<=10):
-            visible = ctx.senseAlgae(radius=i)
-            if visible:
-                dir=ctx.moveTarget(visible[0].location,ctx.getLocation())
-                return move(ctx.getID(),dir)
-            i+=1
-                
-        
-        
-
-
-class FlashScout(BotController):
-    def act(self):
-        return move(self.ctx.getID(), Direction.NORTH)
-
-
-class Hoarder(BotController):
-    def act(self):
-        ctx = self.ctx
-        if ctx.senseObjects()["scraps"]:
-            return move(ctx.getID(), Direction.WEST)
-        if ctx.senseAlgae():
-            return harvest(ctx.getID(), Direction.NORTH)
-        return move(ctx.getID(), Direction.EAST)
-
-
-class Mule(BotController):
-    def act(self):
-        ctx = self.ctx
-        if ctx.senseObjects()["scraps"]:
-            return move(ctx.getID(), Direction.WEST)
-        return move(ctx.getID(), Direction.EAST)
-
-
-class Lurker(BotController):
-    def act(self):
-        ctx = self.ctx
-        enemies = ctx.senseEnemyNearby()
-        if enemies:
-            e = enemies[0]
-            return attack(ctx.getID(), e.location.x, e.location.y)
-        return move(ctx.getID(), Direction.SOUTH)
-
-
-class Saboteur(BotController):
-    def act(self):
-        ctx = self.ctx
-        enemies = ctx.senseEnemyNearby()
-        if len(enemies) > 1:
-            return self_destruct(ctx.getID())
-        if enemies:
-            e = enemies[0]
-            return attack(ctx.getID(), e.location.x, e.location.y)
-        return move(ctx.getID(), Direction.WEST)
-
-
-class HeatSeeker(BotController):
-    def __init__(self, ctx):
-        super().__init__(ctx)
-        self.target = None   # persistent memory
-
-    def act(self):
-        ctx = self.ctx
-
-        if self.target is None:
-            enemies = ctx.senseEnemyNearby()
-            if enemies:
-                self.target = enemies[0].location
-
-        if self.target:
-            bx, by = ctx.getLocation().x, ctx.getLocation().y
-            tx, ty = self.target.x, self.target.y
-
-            if bx == tx and by == ty:
-                return self_destruct(ctx.getID())
-            if bx < tx:
-                return move(ctx.getID(), Direction.EAST)
-            if bx > tx:
-                return move(ctx.getID(), Direction.WEST)
-            if by < ty:
-                return move(ctx.getID(), Direction.NORTH)
-            if by > ty:
-                return move(ctx.getID(), Direction.SOUTH)
-
-        return move(ctx.getID(), Direction.NORTH)
-
-
 class CustomBot(BotController):
     def act(self):
-        ctx = self.ctx
-        enemies = ctx.senseEnemyNearby()
-        if enemies:
-            e = enemies[0]
-            return attack(ctx.getID(), e.location.x, e.location.y)
-        if ctx.senseAlgae():
-            return harvest(ctx.getID(), Direction.NORTH)
-        return move(ctx.getID(), Direction.EAST)
+        pass
+    # write the code here
 
 
 # ============================================================
@@ -142,11 +38,9 @@ class CustomBot(BotController):
 TEMPLATE_TO_STRATEGY = {
     "Forager": Forager,
     "FlashScout": FlashScout,
-    "Hoarder": Hoarder,
-    "Mule": Mule,
     "Lurker": Lurker,
-    "Saboteur": Saboteur,
-    "HeatSeeker": HeatSeeker,
+    "Saboteur": HeatSeeker,
+    "HeatSeeker": Saboteur,
     "CustomBot": CustomBot,
 }
 

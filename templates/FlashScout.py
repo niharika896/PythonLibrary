@@ -1,0 +1,26 @@
+from ..controllers.BotBase import BotController
+from ..Translate import *
+from ..Constants import Direction
+
+class FlashScout(BotController):
+    def act(self):
+        ctx = self.ctx
+        bot_pos = ctx.getLocation()
+
+        # sense algae like forager (no harvest)
+        visible = ctx.senseAlgae()
+        if visible:
+            d, steps = ctx.moveTargetSpeed(bot_pos, visible[0].location)
+            if d:
+                return moveSpeed(ctx.getID(), d)
+
+        radius = 2
+        while radius <= 10:
+            visible = ctx.senseAlgae(radius=radius)
+            if visible:
+                d, steps = ctx.moveTargetSpeed(bot_pos, visible[0].location)
+                if d:
+                    return moveSpeed(ctx.getID(), d)
+            radius += 1
+
+        return move(ctx.getID(), Direction.NORTH)

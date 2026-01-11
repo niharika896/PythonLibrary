@@ -37,8 +37,8 @@ ABILITY_COSTS = {
     "SELF_DESTRUCT": {"scrap": 5, "energy": 0.5},
     "SPEED":     {"scrap": 10, "energy": 1},
     "SHIELD":    {"scrap": 5, "energy": 0.25},
-    "POISON":    {"scrap": 5, "energy": 0.5},
-    # "LOCKPICK":  {"scrap": 10, "energy": 1.5},
+    # "POISON":    {"scrap": 5, "energy": 0.5},
+    "LOCKPICK":  {"scrap": 10, "energy": 1.5},
     # "POWERBANK": {"scrap": 15, "energy": -1},
 }
 

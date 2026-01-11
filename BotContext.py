@@ -128,6 +128,39 @@ class BotContext:
         # ---------- no safe move ----------
         return None
     
+    # SPPEEEDDD
+    
+    def moveTargetSpeed(self, bot: Point, target: Point):
+        dx = target.x - bot.x
+        dy = target.y - bot.y
+
+        # ---------- determine primary direction ----------
+        if abs(dx) >= abs(dy):
+            primary = Direction.EAST if dx > 0 else Direction.WEST
+        else:
+            primary = Direction.NORTH if dy > 0 else Direction.SOUTH
+
+        # ---------- try primary direction ----------
+        p1 = next_point(bot, primary)
+        if not self.checkBlocked(p1):
+            p2 = next_point(p1, primary)
+            if not self.checkBlocked(p2):
+                return primary, 2   # fast move
+            return primary, 1       # single step
+
+        # ---------- fallback directions ----------
+        for d in (Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST):
+            p1 = next_point(bot, d)
+            if not self.checkBlocked(p1):
+                p2 = next_point(p1, d)
+                if not self.checkBlocked(p2):
+                    return d, 2
+                return d, 1
+
+        # ---------- no safe movement ----------
+        return None, 0
+
+    
     
     # ---------------- Combat ----------------
     def canDefend(self):

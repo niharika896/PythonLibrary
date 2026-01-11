@@ -71,6 +71,13 @@ def spawn(template_name: str, abilities: list[str]):
         "abilities": abilities
     })
 
+def moveSpeed(bot_id: int, direction: Direction, step:int):
+    return Action(ActionType.MOVE, {
+        "bot_id": bot_id,
+        "direction": direction.value,
+        "step": step
+    })
+    
 
 # def upgrade(bot_id: int, ability: Ability):
 #     return Action(ActionType.UPGRADE, {

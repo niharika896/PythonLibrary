@@ -1,78 +1,94 @@
-# OceanMaster Bot Programming – User Guide
+# OceanMaster Python SDK (`ocean_lib`)
 
-OceanMaster is a strategy-based bot programming platform where you design **autonomous bots** that explore, harvest, fight, and survive in a grid-based world.
-
-> **Key Mindset**  
-> You do **not** control bots every turn.  
-> You **define strategies**, and bots follow them autonomously for their entire lifetime.
+A robust, strongly-typed Python library for building bots for **Ocean Master**.
 
 ## Core Philosophy
 
-> **A bot is born with a strategy.  
-> It lives with that strategy.  
-> It dies with that strategy.**
+> **A bot is born with a strategy. It lives with that strategy. It dies with that strategy.**
 
-- You define **how a bot behaves**
-- The engine decides **when that behavior runs**
-- You never micromanage bots after spawning
+In Ocean Master, you don't micromanage every unit every turn. Instead, you define **Strategies** (behaviors) and assign them to bots when they spawn. The library handles the rest.
 
----
+## Quick Start
 
-## Architecture Overview
+1.  **Inherit from `Game`**: This is your main engine.
+2.  **Define a `BotStrategy`**: This is your bot's brain.
+3.  **Run logic**: The library handles state parsing and action dispatch.
 
-| Layer | Responsibility |
-|------|----------------|
-| **User (`user.py`)** | Strategy logic only |
-| **BotContext** | Gives you methods to define your custom bot |
-| **Helpers** | Create actions (`move`, `attack`, etc.) |
-
-You only write **`user.py`**.
-
----
-
-## Bots = Strategies
-
-Each bot type is a **Python class**.
+### Minimal Example
 
 ```python
-class Forager(BotController):
-    def act(self):
-        ...
+import sys
+from ocean_lib import Game, BotStrategy, BotWrapper, Point, Ability, Direction
+from ocean_lib.models.entities import Bot
+
+# 1. Define a Strategy
+class MyHarvester(BotStrategy):
+    def act(self, bot: BotWrapper):
+        # Move randomly or harvest
+        n = bot.get_nearest_algae()
+        if n:
+             return bot.move(bot.direction_to(n.location))
+        return bot.move(Direction.NORTH)
+
+# 2. Setup the Game
+class MyBotArmy(Game):
+    def get_strategy_for_bot(self, bot: Bot) -> BotStrategy:
+        # Assign strategies to initial bots or mapped falbacks
+        return MyHarvester()
+
+if __name__ == "__main__":
+    game = MyBotArmy(bot_id_start=1000) # Start ID range for your spawns
+    for line in sys.stdin:
+        if line:
+            game.run(line)
 ```
-Define your complete bot strategy here and execute!
 
-## Some Examples:
+## Architecture
 
-### Adding extra abilities while spawning bots and using botcontext
+### `BotStrategy`
+The brain of a single bot. Implement the abstract `act(self, bot: BotWrapper)` method.
+*   **Input**: `BotWrapper` (Your view of the world).
+*   **Output**: `Action` (Move, Attack, Spawn, etc.) or `None`.
+
+### `BotWrapper`
+A helper class passed to `act()`. It wraps the raw `Bot` data and `GameState` to provide convenient method:
+*   `bot.move(direction, step=1)`
+*   `bot.attack(target_point)`
+*   `bot.get_enemies_in_radius(radius)`
+*   `bot.spawn(abilities, strategy)`
+
+### `Game`
+The central manager. It maintains persistence:
+*   `self._strategies`: Maps `bot_id` -> `BotStrategy` instance.
+*   **Spawning**: When you call `bot.spawn()`, the `Game` generates a ID locally and maps the new strategy instance immediately.
+
+## Spawning Bots
+
+To spawn a new bot, you must provide the **Abilities** and the **Strategy Instance** that will control it.
+
 ```python
-    def play(api: GameAPI):
-    actions = []
-
-    if api.view.bot_count < api.view.max_bots:
-        abilities = [
-            Ability.HARVEST.value,
-            Ability.SCOUT.value,
-            Ability.SPEED.value,          # EXTRA ability
-            Ability.SELF_DESTRUCT.value,  # EXTRA ability
-        ]
-
-        if can_afford(api, abilities):
-            actions.append(
-                spawn("HeatSeeker", abilities)
+class MotherShip(BotStrategy):
+    def act(self, bot: BotWrapper):
+        if bot.scraps >= 50:
+            # Spawn a new Scout with the FlashScout strategy
+            return bot.spawn(
+                abilities=[Ability.SPEED, Ability.SCOUT],
+                strategy=FlashScoutStrategy()
             )
+```
 
-    return actions
-```
-### OR like this:
-```python
-actions.append(
-    spawn(
-        "CustomBot",
-        [
-            Ability.HARVEST.value,
-            Ability.SCOUT.value,
-            Ability.SPEED.value,
-        ]
-    )
-)
-```
+## Included Templates
+
+Check `ocean_lib/templates/` for reference implementations:
+*   **Forager**: Harvests algae and returns to bank.
+*   **FlashScout**: Uses speed to explore quickly.
+*   **Lurker**: Stationary defender.
+*   **Saboteur**: Hunts down specific enemies.
+*   **HeatSeeker**: Logic to ram into targets.
+
+## Data Structures
+All models are strictly typed dataclasses found in `ocean_lib.models`:
+*   `Point(x, y)`
+*   `Bot`
+*   `GameMap` / `GameState`
+*   `Action` types (`MoveAction`, `SpawnAction`, etc.)

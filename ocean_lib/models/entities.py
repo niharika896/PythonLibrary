@@ -11,17 +11,24 @@ class Entity:
 @dataclass
 class Algae(Entity):
     """Resource entity that can be harvested."""
+    is_poison: Optional[bool] = None
     pass
 
 @dataclass
 class Bank(Entity):
     """Structure where resources can be deposited."""
-    owner_id: int
+    id: int
+    deposit_occuring: int
+    deposit_amount: int
+    deposit_owner: int
+    depositticksleft: int
 
 @dataclass
 class EnergyPad(Entity):
     """Structure that recharges bot energy."""
-    pass
+    id: int
+    available: int
+    ticksleft: int
 
 @dataclass
 class VisibleScrap(Entity):
@@ -37,8 +44,3 @@ class Bot(Entity):
     scraps: int
     abilities: List[Ability]
     algae_held: int
-    
-    @property
-    def is_mine(self) -> bool:
-        # This logic might need context, but for models just data
-        return True 

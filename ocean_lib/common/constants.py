@@ -10,16 +10,11 @@ class Direction(str, Enum):
 
 class Ability(str, Enum):
     """Bot abilities that determine what they can do."""
-    SPEED = "SPEED"
     HARVEST = "HARVEST"
-    CARRY = "CARRY"
-    REPAIR = "REPAIR"
-    SHIELD = "SHIELD"
-    ATTACK = "ATTACK"
-    SABOTAGE = "SABOTAGE"
-    SELF_DESTRUCT = "SELF_DESTRUCT"
-    CLOAK = "CLOAK"
     SCOUT = "SCOUT"
+    SELF_DESTRUCT = "SELF_DESTRUCT"
+    SPEED = "SPEED"
+    SHIELD = "SHIELD"
     LOCKPICK = "LOCKPICK"
 
 class BotType(str, Enum):
@@ -42,16 +37,11 @@ class AbilityCost(TypedDict):
     scrap: int
     energy: float
 
-ABILITY_COSTS: Dict[str, AbilityCost] = {
-    "SPEED": {"scrap": 5, "energy": 2.0},
-    "HARVEST": {"scrap": 5, "energy": 1.0},
-    "CARRY": {"scrap": 5, "energy": 0.5},
-    "REPAIR": {"scrap": 10, "energy": 3.0},
-    "SHIELD": {"scrap": 10, "energy": 1.0},
-    "ATTACK": {"scrap": 15, "energy": 4.0},
-    "SABOTAGE": {"scrap": 20, "energy": 5.0},
-    "SELF_DESTRUCT": {"scrap": 5, "energy": 50.0},
-    "CLOAK": {"scrap": 25, "energy": 5.0},
-    "SCOUT": {"scrap": 5, "energy": 1.0},
-    "LOCKPICK": {"scrap": 10, "energy": 0.0},
+ABILITY_COSTS: Dict[Ability, AbilityCost] = {
+    Ability.HARVEST: {"scrap": 5, "energy": 1.0},
+    Ability.SCOUT: {"scrap": 5, "energy": 1.0},
+    Ability.SELF_DESTRUCT: {"scrap": 5, "energy": 50.0},
+    Ability.SPEED: {"scrap": 5, "energy": 2.0},
+    Ability.SHIELD: {"scrap": 10, "energy": 1.0},
+    Ability.LOCKPICK:  {"scrap": 10, "energy": 1.5},
 }

@@ -16,13 +16,12 @@ class PermanentEntities:
     """Static entities that do not move."""
     banks: List[Bank]
     energypads: List[EnergyPad]
-    algae: List[Algae] # Permanent algae beds?
+    algae: List[Algae]
 
 @dataclass
 class GameState:
     """
     Represents the full view of the game state visible to the player.
-    (Formerly PlayerView)
     """
     tick: int
     scraps: int

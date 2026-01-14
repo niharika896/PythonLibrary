@@ -1,6 +1,7 @@
 from .Action import Action
 from .Constants import ActionType, Direction, Ability
 from .models.Algae import VisibleAlgae
+from .models.Point import Point
 
 def move(bot_id: int, direction: Direction):
     return Action(ActionType.MOVE, {
@@ -24,7 +25,7 @@ def poison(bot_id: int, x: int, y: int):
     })
 
 
-def self_destruct(bot_id: int):
+def self_destruct(bot_id: int, location:Point):
     return Action(ActionType.SELF_DESTRUCT, {
         "bot_id": bot_id
     })
@@ -65,11 +66,14 @@ def transfer_energy(bot_id: int, target_bot_id: int):
     })
 
 
-def spawn(template_name: str, abilities: list[str]):
+def spawn(template_name: str, abilities: list[str],location:int, target: Point = None):
     return Action(ActionType.SPAWN, {
         "template": template_name,
-        "abilities": abilities
+        "abilities": abilities,
+        "target": target,
+        "location": location
     })
+    
 
 def moveSpeed(bot_id: int, direction: Direction, step:int):
     return Action(ActionType.MOVE, {

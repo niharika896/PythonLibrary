@@ -5,6 +5,12 @@ from ..Constants import Direction
 class Forager(BotController):
     def act(self):
         ctx = self.ctx
+        
+        if(ctx.getAlgaeHeld()>=5):
+            pos = ctx.getNearestBank()
+            dir = ctx.moveTarget(pos,ctx.getLocation())
+            return move(ctx.getID(),dir)
+        
         visible = ctx.senseAlgae()+ctx.senseSacraps()
         if visible:
             return harvest(ctx.getID(), visible[0]);

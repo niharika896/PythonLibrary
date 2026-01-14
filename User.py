@@ -66,10 +66,16 @@ def play(api: GameAPI):
         abilities = [
             Ability.HARVEST.value,
             Ability.SCOUT.value,
+            Ability.LOCKPICK.value
         ]
 
         if can_afford(api, abilities):
             actions.append(spawn("Forager", abilities))
+            
+            
+        if api.view.visible_enemies():
+            for enemy in api.view.visible_enemies():
+                actions.append(spawn("HeatSeeker", [Ability.SELF_DESTRUCT.value],enemy.location))
 
     # ---------------- EXECUTION PHASE ----------------
     for bot in api.get_my_bots():

@@ -18,6 +18,9 @@ class BotContext:
 
     def getLocation(self) -> Point:
         return self.bot.location
+    
+    def getAlgaeHeld(self) ->int:
+        return self.bot.algae_held
 
     def getType(self):
         return self.bot.abilities
@@ -194,6 +197,34 @@ class BotContext:
         return harvest(self.bot.id, direction)
 
     
-    # -----------------Extra Utilities -----------------
+    # -----------------GET NEAREST -----------------
+    def getNearestBank(self):
+        banks = self.api.banks()
+        pos = self.bot.location
+        nearest_bank = min(banks, key=lambda b: manhattan_distance(b.location, pos))
+        return nearest_bank.location
     
-        
+    def getNearestEnergyPad(self):
+        pads = self.api.energypads()
+        pos = self.bot.location
+        nearest_pad = min(pads, key=lambda p: manhattan_distance(p.location, pos))
+        return nearest_pad.location
+    
+    def getNearestScrap(self):
+        scraps = self.api.sense_bot_scraps()
+        pos = self.bot.location
+        nearest_scrap = min(scraps, key=lambda s: manhattan_distance(s.location, pos))
+        return nearest_scrap.location
+    
+    def getNearestAlgae(self):
+        algaes = self.api.visible_algae()
+        pos = self.bot.location
+        nearest_algae = min(algaes, key=lambda a: manhattan_distance(a.location, pos))
+        return nearest_algae.location
+    
+    def getNearestEnemy(self):
+        enemies = self.api.visible_enemies()
+        pos = self.bot.location
+        nearest_enemy = min(enemies, key=lambda e: manhattan_distance(e.location, pos))
+        return nearest_enemy.location
+    

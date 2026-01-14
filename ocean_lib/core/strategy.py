@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 from .action import Action
-from .wrapper import BotWrapper
+from .context import BotContext
 
 class BotStrategy(ABC):
     """
@@ -10,12 +10,12 @@ class BotStrategy(ABC):
     """
 
     @abstractmethod
-    def act(self, bot: BotWrapper) -> Optional[Action]:
+    def act(self, ctx: BotContext) -> Optional[Action]:
         """
         Called every tick for the bot.
         
         Args:
-            bot: The BotWrapper instance providing context and actions.
+            ctx: The BotContext instance providing data and actions.
             
         Returns:
             An Action to perform, or None to do nothing.

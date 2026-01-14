@@ -1,6 +1,6 @@
 from typing import Optional
 from ..core.strategy import BotStrategy
-from ..core.wrapper import BotWrapper
+from ..core.context import BotContext
 from ..core.action import Action
 from ..models.point import Point
 
@@ -11,9 +11,9 @@ class HeatSeekerStrategy(BotStrategy):
     def __init__(self, target: Point):
         self.target = target
 
-    def act(self, bot: BotWrapper) -> Optional[Action]:
-        if bot.location == self.target:
-            return bot.self_destruct()
+    def act(self, ctx: BotContext) -> Optional[Action]:
+        if ctx.location == self.target:
+            return ctx.self_destruct()
 
-        direction = bot.direction_to(self.target)
-        return bot.move(direction)
+        direction = ctx.direction_to(self.target)
+        return ctx.move(direction)

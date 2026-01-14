@@ -6,7 +6,7 @@ from ..common.constants import Direction, Ability
 from ..common.utils import manhattan_distance
 from .action import Action, MoveAction, HarvestAction, AttackAction, SpawnAction, SelfDestructAction
 
-class BotWrapper:
+class BotContext:
     """
     Wraps a Bot and the GameState to provide a convenient API for strategy implementation.
     """
@@ -100,7 +100,6 @@ class BotWrapper:
     def direction_to(self, target: Point) -> Direction:
         """
         Returns the primary cardinal direction.
-        (Previously moveTarget from BotContext roughly matches this logic)
         """
         dx = target.x - self.location.x
         dy = target.y - self.location.y
@@ -109,7 +108,7 @@ class BotWrapper:
         else:
             return Direction.NORTH if dy > 0 else Direction.SOUTH
 
-    def spawn(self, abilities: List[Ability], strategy: 'BotStrategy', location: Optional[Point] = None) -> SpawnAction:
+    def spawn(self, capabilities: List[Ability], strategy: 'BotStrategy', location: Optional[Point] = None) -> SpawnAction:
         if self.game:
-            return self.game.spawn(abilities, strategy, location)
-        return SpawnAction(abilities=abilities, spawn_location=location, new_bot_id=-1) # Should fail/warn
+            return self.game.spawn(capabilities, strategy, location) # fixed capabilities name from arg
+        return SpawnAction(abilities=capabilities, spawn_location=location, new_bot_id=-1)

@@ -8,7 +8,7 @@ from ..models.entities import Bot, Algae, VisibleScrap, Bank, EnergyPad
 from ..models.point import Point
 from ..common.constants import Ability
 from .strategy import BotStrategy
-from .wrapper import BotWrapper
+from .context import BotContext
 from .action import Action, SpawnAction
 
 class Game(ABC):
@@ -28,7 +28,7 @@ class Game(ABC):
         new_id = self._next_bot_id
         self._next_bot_id += 1
         
-        # Immediate mapping! No queue needed.
+        # Immediate mapping!
         self._strategies[new_id] = strategy
         
         return SpawnAction(abilities=capabilities, new_bot_id=new_id, spawn_location=location)
@@ -39,6 +39,7 @@ class Game(ABC):
             actions = self._execute_tick(game_state)
             self._flush_actions(actions)
         except Exception:
+            # Fallback
             pass
 
     def _execute_tick(self, game_state: GameState) -> List[Action]:
@@ -49,41 +50,22 @@ class Game(ABC):
         for bot in game_state.my_bots:
             current_bot_ids.add(bot.id)
             if bot.id not in self._strategies:
-                # This happens if:
-                # a) It's the initial bot (didn't spawn it via this library this run)
-                # b) The engine ignored our ID and gave a different one (Mapping failed)
                 self._strategies[bot.id] = self.get_strategy_for_bot(bot)
 
         # 2. Cleanup died bots
         existing_ids = list(self._strategies.keys())
         for bid in existing_ids:
             if bid not in current_bot_ids:
-                # Important: Don't delete if we JUST spawned it this tick and it hasn't appeared yet!
-                # But 'run' is called on tick N state.
-                # If we spawed at tick N-1, it should be in tick N state.
-                # If we spawn at tick N (now), it won't be in tick N state, but in our strategies map.
-                # So we must NOT delete IDs that are not in current_state BUT were just created?
-                # Actually, standard logic: 
-                # Decode state -> process -> flush actions.
-                # The strategies map contains IDs from previous ticks + newly created ones from THIS tick's logic... wait.
-                # If we spawn INSIDE process(), we add to map.
-                # But here we are cleaning BEFORE process().
-                # So if we spawned last tick, it SHOULD be in game_state.my_bots now.
-                # If it's not, it died or failed to spawn. Safe to delete?
-                # Maybe wait one tick? 
-                
-                # To be strict: Only delete if we are sure it existed before. 
-                # But simplistic cleanup is okay for now.
                 del self._strategies[bid]
 
         # 3. Execute Strategies
         for bot in game_state.my_bots:
             strategy = self._strategies.get(bot.id)
             if strategy:
-                wrapper = BotWrapper(bot, game_state)
-                wrapper.game = self 
+                ctx = BotContext(bot, game_state)
+                ctx.game = self 
                 try:
-                    action = strategy.act(wrapper)
+                    action = strategy.act(ctx)
                     if action:
                         actions.append(action)
                 except Exception:
@@ -93,9 +75,8 @@ class Game(ABC):
     
     def get_strategy_for_bot(self, bot: Bot) -> BotStrategy:
         """
-        Fallback for bots not spawned via 'spawn()' (e.g. initial bots).
+        Fallback for bots not spawned via 'spawn()'.
         """
-        # Default implementation, user overrides
         from ..templates.forager import ForagerStrategy
         return ForagerStrategy() 
 
@@ -104,8 +85,6 @@ class Game(ABC):
         print(json.dumps(output))
 
     def _decode_state(self, raw_json: str) -> GameState:
-        # Passthrough to previous implementation logic...
-        # For brevity, I'll copy the body from previous step since I am overwriting the file.
         data = json.loads(raw_json)
         
         vis_cen = data.get("visible_entities", {})
@@ -117,8 +96,8 @@ class Game(ABC):
         visible = VisibleEntities(enemies=enemies, algae=vis_algae, scraps=vis_scraps, walls=vis_walls)
 
         perm_cen = data.get("permanent_entities", {})
-        banks = [Bank(location=Point(**b["location"]), owner_id=b["owner_id"]) for b in perm_cen.get("banks", [])]
-        pads = [EnergyPad(location=Point(**p["location"])) for p in perm_cen.get("energypads", [])]
+        banks = [Bank(location=Point(**b["location"]), id=b.get("id",0), deposit_occuring=b.get("deposit_occuring",0), deposit_amount=b.get("deposit_amount",0), deposit_owner=b.get("deposit_owner",0), depositticksleft=b.get("depositticksleft",0)) for b in perm_cen.get("banks", [])]
+        pads = [EnergyPad(location=Point(**p["location"]), id=p.get("id",0), available=p.get("available",0), ticksleft=p.get("ticksleft",0)) for p in perm_cen.get("energypads", [])]
         perm_algae = [Algae(location=Point(**a["location"])) for a in perm_cen.get("algae", [])]
 
         permanent = PermanentEntities(banks=banks, energypads=pads, algae=perm_algae)

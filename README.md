@@ -18,17 +18,17 @@ In Ocean Master, you don't micromanage every unit every turn. Instead, you defin
 
 ```python
 import sys
-from ocean_lib import Game, BotStrategy, BotWrapper, Point, Ability, Direction
+from ocean_lib import Game, BotStrategy, BotContext, Point, Ability, Direction
 from ocean_lib.models.entities import Bot
 
 # 1. Define a Strategy
 class MyHarvester(BotStrategy):
-    def act(self, bot: BotWrapper):
+    def act(self, ctx: BotContext):
         # Move randomly or harvest
-        n = bot.get_nearest_algae()
+        n = ctx.get_nearest_algae()
         if n:
-             return bot.move(bot.direction_to(n.location))
-        return bot.move(Direction.NORTH)
+             return ctx.move(ctx.direction_to(n.location))
+        return ctx.move(Direction.NORTH)
 
 # 2. Setup the Game
 class MyBotArmy(Game):
@@ -46,21 +46,21 @@ if __name__ == "__main__":
 ## Architecture
 
 ### `BotStrategy`
-The brain of a single bot. Implement the abstract `act(self, bot: BotWrapper)` method.
-*   **Input**: `BotWrapper` (Your view of the world).
+The brain of a single bot. Implement the abstract `act(self, ctx: BotContext)` method.
+*   **Input**: `BotContext` (Your view of the world).
 *   **Output**: `Action` (Move, Attack, Spawn, etc.) or `None`.
 
-### `BotWrapper`
+### `BotContext`
 A helper class passed to `act()`. It wraps the raw `Bot` data and `GameState` to provide convenient method:
-*   `bot.move(direction, step=1)`
-*   `bot.attack(target_point)`
-*   `bot.get_enemies_in_radius(radius)`
-*   `bot.spawn(abilities, strategy)`
+*   `ctx.move(direction, step=1)`
+*   `ctx.attack(target_point)`
+*   `ctx.get_enemies_in_radius(radius)`
+*   `ctx.spawn(abilities, strategy)`
 
 ### `Game`
 The central manager. It maintains persistence:
 *   `self._strategies`: Maps `bot_id` -> `BotStrategy` instance.
-*   **Spawning**: When you call `bot.spawn()`, the `Game` generates a ID locally and maps the new strategy instance immediately.
+*   **Spawning**: When you call `ctx.spawn()`, the `Game` generates a ID locally and maps the new strategy instance immediately.
 
 ## Spawning Bots
 
@@ -68,10 +68,10 @@ To spawn a new bot, you must provide the **Abilities** and the **Strategy Instan
 
 ```python
 class MotherShip(BotStrategy):
-    def act(self, bot: BotWrapper):
-        if bot.scraps >= 50:
+    def act(self, ctx: BotContext):
+        if ctx.scraps >= 50:
             # Spawn a new Scout with the FlashScout strategy
-            return bot.spawn(
+            return ctx.spawn(
                 abilities=[Ability.SPEED, Ability.SCOUT],
                 strategy=FlashScoutStrategy()
             )

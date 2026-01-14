@@ -1,6 +1,6 @@
 from typing import Optional
 from ..core.strategy import BotStrategy
-from ..core.wrapper import BotWrapper
+from ..core.context import BotContext
 from ..core.action import Action
 from ..common.constants import Direction
 
@@ -9,13 +9,11 @@ class LurkerStrategy(BotStrategy):
     Stand still and attack any enemy that comes close.
     Patrols South if no enemy.
     """
-    def act(self, bot: BotWrapper) -> Optional[Action]:
-        # Sense nearby enemies
-        enemies = bot.get_visible_enemies()
-        # Old template picked the first one available in the list
+    def act(self, ctx: BotContext) -> Optional[Action]:
+        enemies = ctx.get_visible_enemies()
         
         if enemies:
             e = enemies[0]
-            return bot.attack(e.location)
+            return ctx.attack(e.location)
             
-        return bot.move(Direction.SOUTH)
+        return ctx.move(Direction.SOUTH)

@@ -14,35 +14,6 @@ In Ocean Master, you don't micromanage every unit every turn. Instead, you defin
 2.  **Define a `BotStrategy`**: This is your bot's brain.
 3.  **Run logic**: The library handles state parsing and action dispatch.
 
-### Minimal Example
-
-```python
-import sys
-from ocean_lib import Game, BotStrategy, BotContext, Point, Ability, Direction
-from ocean_lib.models.entities import Bot
-
-# 1. Define a Strategy
-class MyHarvester(BotStrategy):
-    def act(self, ctx: BotContext):
-        # Move randomly or harvest
-        n = ctx.get_nearest_algae()
-        if n:
-             return ctx.move(ctx.direction_to(n.location))
-        return ctx.move(Direction.NORTH)
-
-# 2. Setup the Game
-class MyBotArmy(Game):
-    def get_strategy_for_bot(self, bot: Bot) -> BotStrategy:
-        # Assign strategies to initial bots or mapped falbacks
-        return MyHarvester()
-
-if __name__ == "__main__":
-    game = MyBotArmy(bot_id_start=1000) # Start ID range for your spawns
-    for line in sys.stdin:
-        if line:
-            game.run(line)
-```
-
 ## Architecture
 
 ### `BotStrategy`

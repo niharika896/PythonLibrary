@@ -6,7 +6,7 @@ from ocean_lib.models.game_state import GameState, VisibleEntities, PermanentEnt
 from ocean_lib.models.entities import Bot, Algae, VisibleScrap, Bank, EnergyPad
 from ocean_lib.models.point import Point
 from ocean_lib.common.constants import Ability
-
+from engine import GameEngine
 
 def _parse_bot(data: Dict) -> Bot:
     """Parse bot data from JSON."""
@@ -55,18 +55,18 @@ def _decode_state(raw_json: str) -> GameState:
     )
 
 
-def run(game):
+def run(engine: GameEngine):
     """
     Pure I/O wrapper for the game.
-    Reads JSON from stdin, deserializes to GameState, delegates to Game.play(), writes JSON to stdout.
+    Reads JSON from stdin, deserializes to GameState, delegates to GameEngine.play(), writes JSON to stdout.
     """
     for line in sys.stdin:
         if line:
             # Deserialize JSON to GameState
             game_state = _decode_state(line)
             
-            # Delegate game logic to Game
-            actions = game.play(game_state)
+            # Delegate game logic to GameEngine
+            actions = engine.play(game_state)
 
             # Serialize and write actions to stdout
             if actions is not None:
@@ -76,6 +76,6 @@ def run(game):
 
 
 if __name__ == "__main__":
-    from user import MyGame
-    game = MyGame(bot_id_start=0)
-    run(game)
+    from user import MasterStrategy
+    engine = GameEngine(master_strategy_class=MasterStrategy)
+    run(engine)

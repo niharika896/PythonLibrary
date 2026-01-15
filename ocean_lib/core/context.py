@@ -16,7 +16,6 @@ class BotContext:
     def __init__(self, bot: Bot, game_state: GameState):
         self.bot = bot
         self.game_state = game_state
-        self._pending_actions: List[Action] = []
 
     @property
     def id(self) -> int:
@@ -90,7 +89,6 @@ class BotContext:
         Action is automatically added to the current tick's action list.
         """
         action = MoveAction(direction=direction, step=step)
-        self._pending_actions.append(action)
         return action
 
     def harvest(self, direction: Direction) -> HarvestAction:
@@ -99,7 +97,6 @@ class BotContext:
         Action is automatically added to the current tick's action list.
         """
         action = HarvestAction(direction=direction)
-        self._pending_actions.append(action)
         return action
 
     def attack(self, target: Point) -> AttackAction:
@@ -108,7 +105,6 @@ class BotContext:
         Action is automatically added to the current tick's action list.
         """
         action = AttackAction(target=target)
-        self._pending_actions.append(action)
         return action
 
     def self_destruct(self) -> SelfDestructAction:
@@ -117,7 +113,6 @@ class BotContext:
         Action is automatically added to the current tick's action list.
         """
         action = SelfDestructAction()
-        self._pending_actions.append(action)
         return action
 
     def direction_to(self, target: Point) -> Direction:
@@ -131,12 +126,10 @@ class BotContext:
         else:
             return Direction.NORTH if dy > 0 else Direction.SOUTH
 
-    def spawn(self, capabilities: List[Ability], strategy: BotStrategy, location: Point) -> SpawnAction:
+    def spawn(self, capabilities: List[Ability], strategy: BotStrategy, location: Point, new_bot_id: int) -> SpawnAction:
         """
         Spawns a new bot with the given capabilities and strategy.
         Action is automatically added to the current tick's action list.
         """
-        # new_bot_id is temporary here, will be overwritten by Game
-        action = SpawnAction(abilities=capabilities, strategy=strategy, spawn_location=location, new_bot_id=-1)
-        self._pending_actions.append(action)
+        action = SpawnAction(abilities=capabilities, strategy=strategy, spawn_location=location, new_bot_id=new_bot_id)
         return action

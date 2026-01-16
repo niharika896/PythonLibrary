@@ -1,11 +1,13 @@
 from ..controllers.BotBase import BotController
 from ..Translate import *
-from ..Constants import Direction
+from ..Constants import Direction,Ability
 
 class Saboteur(BotController):
     """"
     A bot that seeks out enemy bots and self-destructs near them to destroy them. It remembers its target enemy bot's location until it reaches it or the target is no longer visible."""
-    TEMPLATE="Saboteur"
+    DEFAULT_ABILITIES = [
+        Ability.SELF_DESTRUCT.value
+    ]
     def __init__(self, ctx):
         super().__init__(ctx)
         self.target = None   # persistent memory

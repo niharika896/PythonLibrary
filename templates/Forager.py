@@ -1,13 +1,16 @@
 from ..controllers.BotBase import BotController
 from ..Translate import *
-from ..Constants import Direction
+from ..Constants import Ability
 from ..Helper import direction_from_point
 
 class Forager(BotController):
     """
     A bot that forages for algae and scrap. It harvests resources until it holds 5 units, then returns to the nearest bank to deposit them. It prioritizes nearby resources and moves towards them. If no resources are visible, it expands its search radius.
     """
-    TEMPLATE="Forager"
+    DEFAULT_ABILITIES = [
+        Ability.HARVEST.value,
+        Ability.SCOUT.value
+    ]
     def act(self):
         ctx = self.ctx
         

@@ -24,7 +24,10 @@ from .templates import Forager, FlashScout, HeatSeeker, Lurker, Saboteur
 # ============================================================
 
 class MinerBot(BotController):
-    TEMPLATE = "MinerBot"
+    DEFAULT_ABILITIES = [
+        Ability.HARVEST.value,
+        Ability.SCOUT.value,
+    ]
 
     def act(self):
         ctx = self.ctx
@@ -52,13 +55,7 @@ def spawn_policy(api):
 
     if api.view.bot_count < api.view.max_bots:
         spawns.append(
-            MinerBot.spawn(
-                abilities=[
-                    Ability.HARVEST.value,
-                    Ability.SCOUT.value,
-                ],
-                location=0
-            )
+            MinerBot.spawn(location=0)
         )
 
         spawns.append(

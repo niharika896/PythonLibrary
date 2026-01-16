@@ -1,12 +1,14 @@
 from ..controllers.BotBase import BotController
 from ..Translate import *
-from ..Constants import Direction
+from ..Constants import Direction,Ability
 
 class HeatSeeker(BotController):
     """
     A bot that accepts a block as target and self-destructs at that location.
     """
-    TEMPLATE="HeatSeeker"
+    DEFAULT_ABILITIES=[
+        Ability.SELF_DESTRUCT.value
+    ]
     def __init__(self, ctx, target):
         super().__init__(ctx)
         self.target = target

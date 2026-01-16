@@ -1,12 +1,15 @@
 from ..controllers.BotBase import BotController
 from ..Translate import *
-from ..Constants import Direction
+from ..Constants import Direction, Ability
 
 class FlashScout(BotController):
     """
     A scout bot that moves quickly towards algae to find out its type. It doesn't harvest algae, just scouts them out. It dies upon reaching a poisonous algae.
     """
-    TEMPLATE="FlashScout"
+    DEFAULT_ABILITIES=[
+        Ability.SCOUT.value,
+        Ability.SPEED.value
+    ]
     def act(self):
         ctx = self.ctx
         bot_pos = ctx.getLocation()

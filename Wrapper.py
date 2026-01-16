@@ -13,32 +13,18 @@ from .API import GameAPI
 from .BotContext import BotContext
 from .Translate import spawn
 from .controllers.BotBase import BotController
-from .templates import Forager, FlashScout, HeatSeeker, Lurker, Saboteur
-from .User import TEMPLATE_TO_STRATEGY as USER_TEMPLATE_TO_STRATEGY, spawn_policy
+from .User import spawn_policy
 
-
-# ============================================================
-# STRATEGY REGISTRY (PERSISTENT)
-# ============================================================
 
 BOT_STRATEGIES: dict[int, BotController] = {}
 
-
-# ============================================================
-# TEMPLATE → STRATEGY MAP
-# (Engine defaults + user overrides)
-# ============================================================
-
-
-# ============================================================
-# ENGINE ENTRY POINT
-# ============================================================
 
 def play(api: GameAPI):
     """
     Called once per tick by the engine.
 
     Returns:
+        dict:
         {
             "spawn": { bot_id: spawn_payload },
             "actions": { bot_id: action_payload }
@@ -48,47 +34,65 @@ def play(api: GameAPI):
     spawns: dict[str, dict] = {}
     actions: dict[str, dict] = {}
 
-    # ---------------- SPAWN PHASE ----------------
     for spec in spawn_policy(api):
         strategy_cls = spec["strategy"]
 
+        if not issubclass(strategy_cls, BotController):
+            raise TypeError(
+                f"Invalid strategy class in spawn_policy: {strategy_cls}"
+            )
+
+        base_abilities = list(strategy_cls.DEFAULT_ABILITIES)
+        extra_abilities = spec.get("extra_abilities", [])
+
+        final_abilities = list(dict.fromkeys(
+            base_abilities + extra_abilities
+        ))
+
         bot_id, payload = spawn(
-            abilities=spec["abilities"],
+            abilities=final_abilities,
             location=spec["location"]
         )
 
         spawns[str(bot_id)] = payload
 
-        # Bind strategy instance
+        # create strategy instance (ctx bound in execution phase)
         BOT_STRATEGIES[bot_id] = strategy_cls(None)
 
-
-    # ---------------- EXECUTION PHASE ----------------
-    alive_ids = set()
+    # ========================================================
+    # EXECUTION PHASE
+    # ========================================================
+    alive_ids: set[int] = set()
 
     for bot in api.get_my_bots():
         alive_ids.add(bot.id)
-        ctx = BotContext(api, bot)
 
         if bot.id not in BOT_STRATEGIES:
-            strategy_cls = TEMPLATE_TO_STRATEGY.get(bot.template)
-            if strategy_cls is None:
-                raise ValueError(f"Unknown bot template: {bot.template}")
+            # This should never happen unless the backend
+            # introduces bots without frontend consent
+            raise RuntimeError(
+                f"No strategy registered for bot id {bot.id}"
+            )
 
-            BOT_STRATEGIES[bot.id] = strategy_cls(ctx)
+        ctx = BotContext(api, bot)
 
-        # Rebind context every tick
+        # rebind context every tick
         BOT_STRATEGIES[bot.id].ctx = ctx
 
         action = BOT_STRATEGIES[bot.id].act()
         if action:
             actions[str(bot.id)] = action.to_dict()
 
-    # ---------------- CLEANUP ----------------
-    for bid in list(BOT_STRATEGIES.keys()):
-        if bid not in alive_ids:
-            del BOT_STRATEGIES[bid]
+    # ========================================================
+    # CLEANUP PHASE
+    # ========================================================
+    for bot_id in list(BOT_STRATEGIES.keys()):
+        if bot_id not in alive_ids:
+            del BOT_STRATEGIES[bot_id]
 
+    # ========================================================
+    # FINAL RETURN
+    # ========================================================
     return {
         "spawn": spawns,
         "actions": actions,

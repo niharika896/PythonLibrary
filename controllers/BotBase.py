@@ -5,7 +5,7 @@ class BotController(ABC):
     Base class for all bot strategies.
     """
 
-    TEMPLATE: str | None = None
+    DEFAULT_ABILITIES: list[str] = []
 
     def __init__(self, ctx):
         self.ctx = ctx
@@ -15,18 +15,19 @@ class BotController(ABC):
         pass
 
     @classmethod
-    def spawn(cls, abilities: list[str], location: int):
+    def spawn(cls, abilities: list[str] | None = None, location: int = 0):
         """
-        User-friendly spawn helper.
+        User-facing spawn helper.
+
+        Args:
+            abilities (list[str] | None): Extra abilities to stack.
+            location (int): Spawn location index.
 
         Returns:
             dict: Spawn specification for wrapper.
         """
-        if cls.TEMPLATE is None:
-            raise ValueError(f"{cls.__name__} has no TEMPLATE defined")
-
         return {
             "strategy": cls,
-            "abilities": abilities,
+            "extra_abilities": abilities or [],
             "location": location,
         }

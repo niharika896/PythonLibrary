@@ -3,6 +3,10 @@ from ..Translate import *
 from ..Constants import Direction
 
 class FlashScout(BotController):
+    """
+    A scout bot that moves quickly towards algae to find out its type. It doesn't harvest algae, just scouts them out. It dies upon reaching a poisonous algae.
+    """
+    TEMPLATE="FlashScout"
     def act(self):
         ctx = self.ctx
         bot_pos = ctx.getLocation()
@@ -12,7 +16,7 @@ class FlashScout(BotController):
         if visible:
             d, steps = ctx.moveTargetSpeed(bot_pos, visible[0].location)
             if d:
-                return moveSpeed(ctx.getID(), d)
+                return moveSpeed(d,steps);
 
         radius = 2
         while radius <= 10:
@@ -20,7 +24,7 @@ class FlashScout(BotController):
             if visible:
                 d, steps = ctx.moveTargetSpeed(bot_pos, visible[0].location)
                 if d:
-                    return moveSpeed(ctx.getID(), d)
+                    return moveSpeed(d,steps);
             radius += 1
 
-        return move(ctx.getID(), Direction.NORTH)
+        return move(Direction.NORTH)

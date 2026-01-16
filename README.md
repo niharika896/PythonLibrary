@@ -76,3 +76,25 @@ actions.append(
     )
 )
 ```
+
+### Inheriting a pre-existing bot for fine tuning
+```python
+    class CautiousForager(Forager):
+        """
+        A safer version of the built-in Forager.
+        Deposits algae earlier and avoids long searches.
+        """
+
+        def act(self):
+            ctx = self.ctx
+
+            # Deposit earlier than base Forager
+            if ctx.getAlgaeHeld() >= 3:
+                bank = ctx.getNearestBank()
+                d = ctx.moveTarget(ctx.getLocation(), bank)
+                if d:
+                    return ctx.move(d)
+
+            # Otherwise, reuse base behavior
+            return super().act()
+```

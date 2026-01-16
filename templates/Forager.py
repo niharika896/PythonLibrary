@@ -1,25 +1,31 @@
 from ..controllers.BotBase import BotController
 from ..Translate import *
 from ..Constants import Direction
+from ..Helper import direction_from_point
 
 class Forager(BotController):
+    """
+    A bot that forages for algae and scrap. It harvests resources until it holds 5 units, then returns to the nearest bank to deposit them. It prioritizes nearby resources and moves towards them. If no resources are visible, it expands its search radius.
+    """
+    TEMPLATE="Forager"
     def act(self):
         ctx = self.ctx
         
         if(ctx.getAlgaeHeld()>=5):
             pos = ctx.getNearestBank()
             dir = ctx.moveTarget(pos,ctx.getLocation())
-            return move(ctx.getID(),dir)
+            return move(dir)
         
         visible = ctx.senseAlgae()+ctx.senseSacraps()
         if visible:
-            return harvest(ctx.getID(), visible[0]);
+            dir=direction_from_point(ctx.getLocation(),visible[0].location)
+            return harvest(dir);
         i=2;
         while(i<=10):
             visible = ctx.senseAlgae(radius=i)+ctx.senseSacraps(radius=i)
             if visible:
                 dir=ctx.moveTarget(visible[0].location,ctx.getLocation())
-                return move(ctx.getID(),dir)
+                return move(dir)
             i+=1
                 
         

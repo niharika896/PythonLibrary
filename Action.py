@@ -7,8 +7,7 @@ class Action:
         self.action_type = action_type
         self.payload = payload
 
-    def emit(self):
+    def to_dict(self):
         out = {"action": self.action_type.value}
         out.update(self.payload)
-        print(json.dumps(out)) ##read by go using stdout
-
+        return out

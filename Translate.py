@@ -1,94 +1,39 @@
 from .Action import Action
-from .Constants import ActionType, Direction, Ability
-from .models.Algae import VisibleAlgae
-from .models.Point import Point
+from .Constants import ActionType, Direction
+from .BotIDAllocator import BotIDAllocator
 
-def move(bot_id: int, direction: Direction):
+BOT_ID_ALLOCATOR = BotIDAllocator()
+
+
+def move(direction: Direction):
     return Action(ActionType.MOVE, {
-        "bot_id": bot_id,
         "direction": direction.value
     })
 
-
-def harvest(bot_id: int, visibleAlgae: VisibleAlgae):
-    return Action(ActionType.HARVEST, {
-        "bot_id": bot_id,
-        "visibleAlgae": visibleAlgae
-    })
-
-
-def poison(bot_id: int, x: int, y: int):
-    return Action(ActionType.POISON, {
-        "bot_id": bot_id,
-        "x": x,
-        "y": y
-    })
-
-
-def self_destruct(bot_id: int, location:Point):
-    return Action(ActionType.SELF_DESTRUCT, {
-        "bot_id": bot_id
-    })
-
-
-def attack(bot_id: int, x: int, y: int):
-    return Action(ActionType.ATTACK, {
-        "bot_id": bot_id,
-        "x": x,
-        "y": y
-    })
-
-
-def defend(bot_id: int):
-    return Action(ActionType.DEFEND, {
-        "bot_id": bot_id
-    })
-
-
-def lockpick(bot_id: int, bank_id: int):
-    return Action(ActionType.LOCKPICK, {
-        "bot_id": bot_id,
-        "bank_id": bank_id
-    })
-
-
-def scavenge(bot_id: int, direction: Direction):
-    return Action(ActionType.SCAVENGE, {
-        "bot_id": bot_id,
-        "direction": direction.value
-    })
-
-
-def transfer_energy(bot_id: int, target_bot_id: int):
-    return Action(ActionType.TRANSFER_ENERGY, {
-        "bot_id": bot_id,
-        "target_bot_id": target_bot_id
-    })
-
-
-def spawn(template_name: str, abilities: list[str],location:int, target: Point = None):
-    return Action(ActionType.SPAWN, {
-        "template": template_name,
-        "abilities": abilities,
-        "target": target,
-        "location": location
-    })
-    
-
-def moveSpeed(bot_id: int, direction: Direction, step:int):
+def moveSpeed(direction: Direction, step: int):
     return Action(ActionType.MOVE, {
-        "bot_id": bot_id,
         "direction": direction.value,
         "step": step
     })
-    
 
-# def upgrade(bot_id: int, ability: Ability):
-#     return Action(ActionType.UPGRADE, {
-#         "bot_id": bot_id,
-#         "ability": ability.value
-#     })
+def harvest(direction: Direction):
+    return Action(ActionType.HARVEST, {
+        "direction": direction.value
+    })
 
-#Example Usage:
-#move(1, Direction.NORTH)
-#upgrade(2, Ability.SHIELD)
+def self_destruct():
+    return Action(ActionType.SELF_DESTRUCT, {
+        "direction": "NULL"
+    })
+
+def defend():
+    return Action(ActionType.DEFEND, {
+        "direction": "NULL"
+    })
+
+def spawn(abilities: list[str], location:int):
+    bot_id= BOT_ID_ALLOCATOR.allocate()
+    return bot_id, {
+        "abilities": abilities,
+        "location": {"x": location, "y": 0}
+    }

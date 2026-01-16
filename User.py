@@ -1,95 +1,71 @@
 """
-USER STRATEGIES ONLY (PERSISTENT STRATEGY MODEL)
+USER STRATEGIES ONLY
 
-You define:
-- Bot strategies (classes)
-- Spawn decisions (inside play)
+You may:
+- Define new bot strategy classes
+- Register them in TEMPLATE_TO_STRATEGY
+- Decide WHEN and WHICH bots to spawn
+- Decide actions for your bots
 
-You do NOT:
-- read input
-- write output
-- manage engine lifecycle
+You may NOT:
+- Generate bot IDs
+- Serialize output
+- Access engine internals
 """
 
-from .API import GameAPI
-from .BotContext import BotContext
-from .Constants import Ability, Direction
-from .Translate import *
 from .controllers.BotBase import BotController
+from .Constants import Ability, Direction
+from .models.Point import Point
 from .templates import Forager, FlashScout, HeatSeeker, Lurker, Saboteur
 
 
 # ============================================================
-# PERSISTENT STRATEGY REGISTRY
+# CUSTOM BOT EXAMPLE
 # ============================================================
 
-BOT_STRATEGIES = {}   # bot_id -> strategy instance
+class MinerBot(BotController):
+    TEMPLATE = "MinerBot"
 
-class CustomBot(BotController):
     def act(self):
-        pass
-    # write the code here
+        ctx = self.ctx
 
+        if ctx.getAlgaeHeld() >= 5:
+            bank = ctx.getNearestBank()
+            d = ctx.moveTarget(ctx.getLocation(), bank)
+            if d:
+                return ctx.move(d)
 
-# ============================================================
-# TEMPLATE → STRATEGY MAP
-# ============================================================
+        algae = ctx.senseAlgae()
+        if algae:
+            return ctx.harvestAlgae(Direction.NORTH)
 
-TEMPLATE_TO_STRATEGY = {
-    "Forager": Forager,
-    "FlashScout": FlashScout,
-    "Lurker": Lurker,
-    "Saboteur": HeatSeeker,
-    "HeatSeeker": Saboteur,
-    "CustomBot": CustomBot,
-}
+        return ctx.move(Direction.NORTH)
+
 
 
 # ============================================================
-# COST CHECK (OPTIONAL USER UTILITY)
+# SPAWN POLICY
 # ============================================================
 
-def can_afford(api: GameAPI, abilities: list[str]) -> bool:
-    from .Constants import ABILITY_COSTS
-    return sum(ABILITY_COSTS[a]["scrap"] for a in abilities) <= api.get_scraps()
+def spawn_policy(api):
+    spawns = []
 
-
-# ============================================================
-# MAIN ENTRY POINT
-# ============================================================
-
-def play(api: GameAPI):
-    actions = []
-
-    # ---------------- SPAWN PHASE ----------------
     if api.view.bot_count < api.view.max_bots:
-        abilities = [
-            Ability.HARVEST.value,
-            Ability.SCOUT.value,
-            Ability.LOCKPICK.value
-        ]
-
-        if can_afford(api, abilities):
-            actions.append(spawn("Forager", abilities))
-            
-            
-        if api.view.visible_enemies():
-            for enemy in api.view.visible_enemies():
-                actions.append(spawn("HeatSeeker", [Ability.SELF_DESTRUCT.value],enemy.location))
-
-    # ---------------- EXECUTION PHASE ----------------
-    for bot in api.get_my_bots():
-        ctx = BotContext(api, bot)
-
-        if bot.id not in BOT_STRATEGIES:
-            strategy_cls = TEMPLATE_TO_STRATEGY.get(
-                bot.template,
-                CustomBot
+        spawns.append(
+            MinerBot.spawn(
+                abilities=[
+                    Ability.HARVEST.value,
+                    Ability.SCOUT.value,
+                ],
+                location=0
             )
-            BOT_STRATEGIES[bot.id] = strategy_cls(ctx)
+        )
 
-        action = BOT_STRATEGIES[bot.id].act()
-        if action:
-            actions.append(action)
+        spawns.append(
+            Forager.spawn(
+                abilities=[Ability.LOCKPICK.value],
+                location=2
+            )
+        )
 
-    return actions
+    return spawns

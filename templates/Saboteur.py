@@ -3,6 +3,9 @@ from ..Translate import *
 from ..Constants import Direction
 
 class Saboteur(BotController):
+    """"
+    A bot that seeks out enemy bots and self-destructs near them to destroy them. It remembers its target enemy bot's location until it reaches it or the target is no longer visible."""
+    TEMPLATE="Saboteur"
     def __init__(self, ctx):
         super().__init__(ctx)
         self.target = None   # persistent memory
@@ -13,7 +16,7 @@ class Saboteur(BotController):
 
         close_enemies = ctx.senseEnemyinRadius(bot_pos, radius=1)
         if close_enemies:
-            return self_destruct(ctx.getID())
+            return self_destruct()
 
         if self.target is None:
             radius = 2
@@ -27,8 +30,8 @@ class Saboteur(BotController):
         if self.target:
             d = ctx.moveTarget(bot_pos, self.target)
             if d:
-                return move(ctx.getID(), d)
+                return move( d)
             else:
                 self.target = None
                 
-        return move(ctx.getID(), Direction.NORTH)
+        return move(Direction.NORTH)

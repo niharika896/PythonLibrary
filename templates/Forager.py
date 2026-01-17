@@ -16,7 +16,7 @@ class Forager(BotController):
         
         if(ctx.getAlgaeHeld()>=5):
             pos = ctx.getNearestBank()
-            dir = ctx.moveTarget(pos,ctx.getLocation())
+            dir = ctx.moveTarget(ctx.getLocation(),pos)
             return move(dir)
         
         visible = ctx.senseAlgae()+ctx.senseSacraps()
@@ -27,7 +27,7 @@ class Forager(BotController):
         while(i<=10):
             visible = ctx.senseAlgae(radius=i)+ctx.senseSacraps(radius=i)
             if visible:
-                dir=ctx.moveTarget(visible[0].location,ctx.getLocation())
+                dir=ctx.moveTarget(ctx.getLocation(),visible[0].location)
                 return move(dir)
             i+=1
                 
